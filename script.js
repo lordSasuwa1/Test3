@@ -1,149 +1,179 @@
 /* ==============================================
-   🔧 CONFIGURATION (MODIFIE ICI !)
+   🔧 CONFIGURATION (C'EST ICI QUE TU MODIFIES)
    ============================================== */
 
 const CONFIG = {
-    prenom: "Mon Amour",       // Son prénom
-    motDePasse: "2024",        // Le code secret
-    messagesErreur: [          // Les messages si le code est faux
-        "Raté ! Petit indice : c'est notre année... 😘",
-        "Nop ! Même mon code est plus romantique. ✨",
-        "Erreur : Trop de charme, mais mauvais code. ⛔",
-        "Presque... mais non. Concentre-toi ! 🧠❤️"
-    ],
-    contenuCartes: [           // Le contenu des 4 cartes
+    prenom: "Mon Cœur",         // Son prénom
+    motDePasse: "2024",         // Code secret
+    tonNumeroWhatsApp: "33612345678", // ⚠️ METS TON NUMÉRO ICI (ex: 336... sans le +)
+    
+    // Tes questions pour elle (dans la partie Quiz)
+    questionPourElle: "Si on devait partir demain, tu voudrais aller où ? Et quel est ton meilleur souvenir avec moi ?",
+
+    // Contenu des cartes
+    cartes: [
         {
             title: "Notre Histoire 📖",
-            body: "<p>Il était une fois... <strong>nous</strong>.<br><br>Chaque instant avec toi est une page que j'adore écrire. Tu te souviens de notre première rencontre ?<br><br>Moi je ne l'oublierai jamais.</p>"
+            body: "<p>C'est l'histoire d'un garçon et d'une fille...<br><br>Tout a commencé le [DATE]. Depuis, chaque jour est une aventure. <br><br>Tu te souviens de [SOUVENIR] ?</p>"
         },
         {
-            title: "Tes Bons Cadeaux 🎁",
-            body: "<ul><li>🎫 Bon pour un massage de 30min</li><br><li>🎫 Bon pour un resto de ton choix</li><br><li>🎫 Bon pour un 'Joker Dispute' (à utiliser avec sagesse 😅)</li></ul>"
+            title: "Tes Cadeaux 🎁",
+            body: "<ul><li>🎫 Un massage crânien (par moi)</li><br><li>🎫 Un dîner fait maison</li><br><li>🎫 Une soirée film sans râler sur le choix</li></ul>"
         },
         {
-            title: "Le Mur des Mots 💌",
-            body: "<p>Juste pour te dire que tu es la personne la plus incroyable que je connaisse. Merci d'être toi.<br><br>Je t'aime plus qu'hier, moins que demain. ❤️</p>"
+            title: "Mots Doux 💌",
+            body: "<p>Je ne te le dis peut-être pas assez, mais tu es incroyable. <br><br>J'aime ta façon de rire, j'aime [DÉTAIL].<br><br>Je t'aime. ❤️</p>"
+        },
+        { 
+            // Carte Musique (ne pas modifier le titre, c'est automatique)
+            title: "Notre Musique 🎧", 
+            body: "<p>Cette musique, c'est nous. <br>Ferme les yeux et écoute.</p><button class='btn-3d' style='margin-top:20px; background:#6c5ce7; box-shadow: 0 5px 0 #4834d4;' onclick='toggleMusic()'>⏯️ Play / Pause</button>" 
         },
         {
-            title: "Notre Playlist 🎧",
-            body: "<p>Ferme les yeux et imagine notre chanson.<br><br>C'est ce que je ressens quand je te regarde. <br><br><em>(Ajoute ton lien ici)</em></p>"
+            // Carte Réponses (Formulaire)
+            title: "À ton tour... 📝",
+            isQuiz: true // Active le mode formulaire
         }
     ]
 };
 
 /* ==============================================
-   🚀 LOGIQUE DU SITE (NE PAS TOUCHER SI POSSIBLE)
+   🚀 LOGIQUE DU SITE
    ============================================== */
 
-// 1. Initialisation
+let failedAttempts = 0;
+let isPlaying = false;
+const audioPlayer = document.getElementById('audio-player');
+
 document.addEventListener('DOMContentLoaded', () => {
-    // Mettre le prénom
     document.getElementById('u-name').innerText = CONFIG.prenom;
-    
-    // Lancer les pétales
     createPetals();
 
-    // Timer pour passer de l'arbre au login (4.5 secondes)
+    // Transition Intro -> Login
     setTimeout(() => {
         switchScreen('intro-screen', 'login-screen');
     }, 4500);
 
-    // Écouteur sur le bouton login
+    // Login
     document.getElementById('login-btn').addEventListener('click', checkPass);
-    
-    // Écouteur sur les cartes du menu
+
+    // Carousel
     document.querySelectorAll('.menu-card').forEach(card => {
         card.addEventListener('click', () => {
             const index = card.getAttribute('data-index');
             openModal(index);
         });
     });
-
-    // Écouteurs pour la navigation carousel
+    
+    // Navigation Flèches
     document.querySelector('.nav-btn.prev').addEventListener('click', () => rotateCarousel(-1));
     document.querySelector('.nav-btn.next').addEventListener('click', () => rotateCarousel(1));
 
-    // Écouteur pour fermer la modal
+    // Fermeture Modal
     document.querySelector('.close-modal').addEventListener('click', closeModal);
 });
 
-// 2. Gestion des écrans
-function switchScreen(fromId, toId) {
-    const fromScreen = document.getElementById(fromId);
-    const toScreen = document.getElementById(toId);
-
-    fromScreen.classList.remove('active');
-    fromScreen.classList.add('hidden');
-
-    setTimeout(() => {
-        fromScreen.style.display = 'none';
-        toScreen.style.display = 'flex';
-        void toScreen.offsetWidth; // Force reflow
-        toScreen.classList.add('active');
-    }, 500);
+// --- NAVIGATION ÉCRANS ---
+function switchScreen(from, to) {
+    const f = document.getElementById(from);
+    const t = document.getElementById(to);
+    f.classList.remove('active'); f.classList.add('hidden');
+    setTimeout(() => { f.style.display = 'none'; t.style.display = 'flex'; void t.offsetWidth; t.classList.add('active'); }, 500);
 }
 
-// 3. Vérification mot de passe
+// --- LOGIQUE MOT DE PASSE (AVEC GESTION 5 ERREURS) ---
 function checkPass() {
     const input = document.getElementById('pass-input');
-    const val = input.value;
     const errDiv = document.getElementById('error-msg');
     const panel = document.querySelector('.glass-panel');
 
-    if(val === CONFIG.motDePasse) {
-        // Succès
+    if(input.value === CONFIG.motDePasse) {
         input.style.borderColor = "#4CAF50";
         errDiv.style.color = "#4CAF50";
-        errDiv.innerText = "Accès autorisé... Bienvenue ❤️";
-        setTimeout(() => {
-            switchScreen('login-screen', 'menu-screen');
-        }, 1000);
+        errDiv.innerText = "Accès autorisé... ❤️";
+        playSound(); // Lance la musique à l'ouverture si le navigateur l'autorise
+        setTimeout(() => switchScreen('login-screen', 'menu-screen'), 1000);
     } else {
-        // Échec
-        panel.classList.remove('shake');
-        void panel.offsetWidth;
-        panel.classList.add('shake');
-        input.value = "";
-        input.focus();
-        
-        const randomMsg = CONFIG.messagesErreur[Math.floor(Math.random() * CONFIG.messagesErreur.length)];
-        errDiv.innerText = randomMsg;
-        errDiv.style.color = "#d32f2f";
+        failedAttempts++;
+        panel.classList.remove('shake'); void panel.offsetWidth; panel.classList.add('shake');
+        input.value = ""; input.focus();
+
+        // Messages d'erreur
+        if(failedAttempts < 5) {
+            const msgs = ["Non...", "Toujours pas", "Essaie encore", "Indice : C'est nous"];
+            errDiv.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+        } else {
+            // Message SPÉCIAL après 5 erreurs
+            errDiv.innerText = "Tu m'as oublié ? 😭 Je vais pleurer !";
+            errDiv.style.fontSize = "1.1rem";
+        }
     }
 }
 
-// 4. Carousel 3D
+// --- CAROUSEL 3D (5 CARTES) ---
 let currDeg = 0;
 const carousel = document.getElementById('carousel');
-
-function rotateCarousel(direction) {
-    currDeg -= direction * 90;
+function rotateCarousel(dir) {
+    currDeg -= dir * 72; // 360 / 5 = 72 degrés
     carousel.style.transform = `rotateY(${currDeg}deg)`;
 }
 
-// 5. Modal
+// --- AUDIO ---
+function toggleMusic() {
+    if(isPlaying) { audioPlayer.pause(); } else { audioPlayer.play(); }
+    isPlaying = !isPlaying;
+}
+function playSound() { 
+    // Tentative de lecture auto (bloqué parfois par Chrome)
+    audioPlayer.volume = 0.5;
+    audioPlayer.play().catch(e => console.log("Audio bloqué en attente d'interaction"));
+    isPlaying = true;
+}
+
+// --- MODAL & FEEDBACK WHATSAPP ---
 function openModal(index) {
-    const content = CONFIG.contenuCartes[index];
-    const modalBody = document.getElementById('modal-body');
-    modalBody.innerHTML = `<h2>${content.title}</h2>${content.body}`;
+    const data = CONFIG.cartes[index];
+    const body = document.getElementById('modal-body');
+    
+    if(data.isQuiz) {
+        // Génère le formulaire de réponse
+        body.innerHTML = `
+            <h2>${data.title}</h2>
+            <p>${CONFIG.questionPourElle}</p>
+            <textarea id="user-reply" placeholder="Écris ta réponse ici..."></textarea>
+            <button class="btn-3d send-btn" onclick="sendToWhatsApp()">Envoyer la réponse 🚀</button>
+            <p style="font-size:0.8rem; margin-top:10px; color:#888;">(Ça ouvrira WhatsApp)</p>
+        `;
+    } else {
+        // Affiche le contenu normal
+        body.innerHTML = `<h2>${data.title}</h2>${data.body}`;
+    }
     document.getElementById('modal-overlay').classList.add('open');
 }
 
-function closeModal() {
-    document.getElementById('modal-overlay').classList.remove('open');
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+function sendToWhatsApp() {
+    const reply = document.getElementById('user-reply').value;
+    if(!reply) return alert("Écris un petit mot avant ! 😘");
+    
+    // Création du lien WhatsApp
+    const text = `Coucou ! J'ai vu ta surprise. Voici ma réponse à ta question : ${reply} ❤️`;
+    const url = `https://wa.me/${CONFIG.tonNumeroWhatsApp}?text=${encodeURIComponent(text)}`;
+    
+    window.open(url, '_blank');
 }
 
-// 6. Animation Pétales
+// --- DECORATION ---
 function createPetals() {
-    const container = document.getElementById('bg-container');
+    const c = document.getElementById('bg-container');
     for(let i=0; i<15; i++) {
-        let petal = document.createElement('div');
-        petal.className = 'petal';
-        petal.style.left = Math.random() * 100 + '%';
-        petal.style.width = (Math.random() * 10 + 5) + 'px';
-        petal.style.height = petal.style.width;
-        petal.style.animationDuration = (Math.random() * 5 + 5) + 's';
-        petal.style.animationDelay = (Math.random() * 5) + 's';
-        container.appendChild(petal);
+        let p = document.createElement('div');
+        p.className = 'petal';
+        p.style.left = Math.random()*100+'%';
+        p.style.width = p.style.height = (Math.random()*10+5)+'px';
+        p.style.animationDuration = (Math.random()*5+5)+'s';
+        p.style.animationDelay = Math.random()*5+'s';
+        c.appendChild(p);
     }
-}
+           }
