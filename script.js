@@ -8,9 +8,9 @@ const CONFIG = {
     
     // Ton Juke-box (Assure-toi que les fichiers sont dans le dossier)
     playlist: [
-        { name: "✨ Ambiance Romantique", file: "musique1.mp3" },
+        { name: "✨ Ton Délire", file: "musique1.mp3" },
         { name: "🌙 Douceur Nocturne", file: "musique2.mp3" },
-        { name: "💃 Notre Délire", file: "musique3.mp3" }
+        { name: "🌹 Ambiance Romantique", file: "musique3.mp3" }
     ],
 
     // Contenu des rubriques
