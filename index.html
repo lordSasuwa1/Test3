@@ -3,10 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Une Surprise pour Toi</title>
+    <title>Surprise 3D</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <audio id="audio-player" loop>
+        <source src="musique.mp3" type="audio/mpeg">
+        Ton navigateur ne supporte pas l'audio.
+    </audio>
 
     <div class="bg-gradient" id="bg-container"></div>
 
@@ -17,72 +23,72 @@
                 <path class="branch" d="M50 120 L50 90 Q50 60 30 40" style="animation-delay: 0s" />
                 <path class="branch" d="M50 90 Q50 60 70 40" style="animation-delay: 0.5s" />
                 <path class="branch" d="M50 80 Q50 60 50 30" style="animation-delay: 0.3s" />
-                
                 <circle cx="30" cy="40" r="5" class="flower" style="animation-delay: 2s" />
                 <circle cx="70" cy="40" r="5" class="flower" style="animation-delay: 2.2s" />
                 <circle cx="50" cy="30" r="6" class="flower" style="animation-delay: 2.1s" />
                 <circle cx="40" cy="60" r="3" class="flower" style="animation-delay: 2.3s" />
                 <circle cx="60" cy="65" r="3" class="flower" style="animation-delay: 2.4s" />
             </svg>
-            <p class="intro-text">Patience... ça pousse 🌸</p>
+            <p class="intro-text">Chargement de l'amour... 🌸</p>
         </div>
 
         <div id="login-screen" class="screen">
             <div class="glass-panel">
                 <h2>Coucou <span id="u-name">Toi</span></h2>
-                <p class="subtitle">Une surprise t'attend. Mais d'abord...</p>
-                <input type="password" id="pass-input" placeholder="****" maxlength="8">
-                <button id="login-btn">Ouvrir ✨</button>
+                <p class="subtitle">Mot de passe requis pour accéder à mon cœur.</p>
+                <input type="password" id="pass-input" placeholder="CODE" maxlength="8">
+                
+                <button id="login-btn" class="btn-3d">ENTRER 🔐</button>
+                
                 <div class="error-msg" id="error-msg"></div>
             </div>
         </div>
 
         <div id="menu-screen" class="screen">
-            <h2 class="menu-title">Choisis une carte ❤️</h2>
+            <h2 class="menu-title">Fais tourner ❤️</h2>
             
             <div class="menu-container">
                 <div class="card-stack" id="carousel">
                     <div class="menu-card" data-index="0">
                         <div class="card-icon">📖</div>
-                        <div class="card-title">Notre Histoire</div>
-                        <div class="card-desc">Nos moments clés...</div>
+                        <div class="card-title">Histoire</div>
                     </div>
                     <div class="menu-card" data-index="1">
                         <div class="card-icon">🎁</div>
                         <div class="card-title">Cadeaux</div>
-                        <div class="card-desc">Bons à utiliser</div>
                     </div>
                     <div class="menu-card" data-index="2">
                         <div class="card-icon">💌</div>
                         <div class="card-title">Mots Doux</div>
-                        <div class="card-desc">Juste pour toi</div>
                     </div>
                     <div class="menu-card" data-index="3">
                         <div class="card-icon">🎧</div>
-                        <div class="card-title">Playlist</div>
-                        <div class="card-desc">Notre musique</div>
+                        <div class="card-title">Play</div>
+                        <div class="playing-indicator">Tap pour écouter</div>
+                    </div>
+                    <div class="menu-card" data-index="4">
+                        <div class="card-icon">📝</div>
+                        <div class="card-title">Réponds-moi</div>
                     </div>
                 </div>
             </div>
 
             <div class="nav-buttons">
-                <div class="nav-btn prev">❮</div>
-                <div class="nav-btn next">❯</div>
+                <div class="nav-btn prev btn-3d">❮</div>
+                <div class="nav-btn next btn-3d">❯</div>
             </div>
-            <p class="hint-text">Glisse ou clique sur les flèches</p>
         </div>
 
     </div>
 
     <div id="modal-overlay">
         <div class="modal-content">
-            <div class="close-modal">✕</div>
+            <div class="close-modal btn-3d">✕</div>
             <div id="modal-body">
                 </div>
         </div>
     </div>
-
+    
     <script src="script.js"></script>
 </body>
 </html>
-  
