@@ -1,172 +1,194 @@
 /* ==============================================
-   🔧 CONFIGURATION (C'EST ICI QUE TU MODIFIES)
+   🔧 CONFIGURATION (PERSONNALISE ICI)
    ============================================== */
-
 const CONFIG = {
-    prenom: "Mon Cœur",         // Son prénom
-    motDePasse: "2024",         // Code secret
-    tonNumeroWhatsApp: "33612345678", // ⚠️ METS TON NUMÉRO ICI (ex: 336... sans le +)
+    prenom: "Mon Amour",
+    motDePasse: "2024", // Le code pour entrer
+    tonNumeroWhatsApp: "33600000000", // Ton numéro sans le + (ex: 336...)
     
-    // Tes questions pour elle (dans la partie Quiz)
-    questionPourElle: "Si on devait partir demain, tu voudrais aller où ? Et quel est ton meilleur souvenir avec moi ?",
+    // Ton Juke-box (Assure-toi que les fichiers sont dans le dossier)
+    playlist: [
+        { name: "✨ Ambiance Romantique", file: "musique1.mp3" },
+        { name: "🌙 Douceur Nocturne", file: "musique2.mp3" },
+        { name: "💃 Notre Délire", file: "musique3.mp3" }
+    ],
 
-    // Contenu des cartes
-    cartes: [
-        {
-            title: "Notre Histoire 📖",
-            body: "<p>C'est l'histoire d'un garçon et d'une fille...<br><br>Tout a commencé le [DATE]. Depuis, chaque jour est une aventure. <br><br>Tu te souviens de [SOUVENIR] ?</p>"
-        },
-        {
-            title: "Tes Cadeaux 🎁",
-            body: "<ul><li>🎫 Un massage crânien (par moi)</li><br><li>🎫 Un dîner fait maison</li><br><li>🎫 Une soirée film sans râler sur le choix</li></ul>"
-        },
-        {
-            title: "Mots Doux 💌",
-            body: "<p>Je ne te le dis peut-être pas assez, mais tu es incroyable. <br><br>J'aime ta façon de rire, j'aime [DÉTAIL].<br><br>Je t'aime. ❤️</p>"
-        },
-        { 
-            // Carte Musique (ne pas modifier le titre, c'est automatique)
-            title: "Notre Musique 🎧", 
-            body: "<p>Cette musique, c'est nous. <br>Ferme les yeux et écoute.</p><button class='btn-3d' style='margin-top:20px; background:#6c5ce7; box-shadow: 0 5px 0 #4834d4;' onclick='toggleMusic()'>⏯️ Play / Pause</button>" 
-        },
-        {
-            // Carte Réponses (Formulaire)
-            title: "À ton tour... 📝",
-            isQuiz: true // Active le mode formulaire
-        }
-    ]
+    // Contenu des rubriques
+    histoire: "<p>Tout a commencé par un simple regard... <br><br>Depuis ce jour, ma vie a changé. Chaque moment passé à tes côtés est un trésor que je garde précieusement.</p>",
+    cadeaux: "<ul><li>🎫 Un massage de 30 minutes</li><li>🎫 Une soirée resto de ton choix</li><li>🎫 Un joker 'Grâce matinée'</li></ul>",
+    motsDoux: "<p>Tu es la plus belle chose qui me soit arrivée. <br><br>Je t'aime plus que les mots ne peuvent l'exprimer. ❤️</p>",
+    questionQuiz: "Si on partait en voyage demain, quelle serait notre destination de rêve ? Dis-moi tout !"
 };
 
 /* ==============================================
-   🚀 LOGIQUE DU SITE
+   🚀 LOGIQUE GLOBALE
    ============================================== */
 
 let failedAttempts = 0;
 let isPlaying = false;
+let currentTrackIndex = -1;
+let currDeg = 0;
+
 const audioPlayer = document.getElementById('audio-player');
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('u-name').innerText = CONFIG.prenom;
-    createPetals();
+// --- 1. ANIMATION GALAXIE (INTRO) ---
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
 
-    // Transition Intro -> Login
-    setTimeout(() => {
-        switchScreen('intro-screen', 'login-screen');
-    }, 4500);
-
-    // Login
-    document.getElementById('login-btn').addEventListener('click', checkPass);
-
-    // Carousel
-    document.querySelectorAll('.menu-card').forEach(card => {
-        card.addEventListener('click', () => {
-            const index = card.getAttribute('data-index');
-            openModal(index);
+function initParticles() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    particles = [];
+    for (let i = 0; i < 150; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            size: Math.random() * 2 + 0.5,
+            speedX: Math.random() * 2 - 1,
+            speedY: Math.random() * 2 - 1,
+            color: `hsl(${Math.random() * 360}, 80%, 80%)`
         });
-    });
-    
-    // Navigation Flèches
-    document.querySelector('.nav-btn.prev').addEventListener('click', () => rotateCarousel(-1));
-    document.querySelector('.nav-btn.next').addEventListener('click', () => rotateCarousel(1));
-
-    // Fermeture Modal
-    document.querySelector('.close-modal').addEventListener('click', closeModal);
-});
-
-// --- NAVIGATION ÉCRANS ---
-function switchScreen(from, to) {
-    const f = document.getElementById(from);
-    const t = document.getElementById(to);
-    f.classList.remove('active'); f.classList.add('hidden');
-    setTimeout(() => { f.style.display = 'none'; t.style.display = 'flex'; void t.offsetWidth; t.classList.add('active'); }, 500);
+    }
 }
 
-// --- LOGIQUE MOT DE PASSE (AVEC GESTION 5 ERREURS) ---
+function animateParticles() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+        p.x += p.speedX;
+        p.y += p.speedY;
+        if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
+        ctx.fillStyle = p.color;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+    });
+    requestAnimationFrame(animateParticles);
+}
+
+// --- 2. GESTION DES ÉCRANS ---
+function switchScreen(fromId, toId) {
+    const from = document.getElementById(fromId);
+    const to = document.getElementById(toId);
+    
+    from.classList.remove('active');
+    from.classList.add('hidden');
+    
+    setTimeout(() => {
+        from.style.display = 'none';
+        to.style.display = 'flex';
+        if(toId === 'login-screen') document.querySelector('.bg-gradient').style.opacity = '1';
+        void to.offsetWidth;
+        to.classList.add('active');
+    }, 800);
+}
+
+// --- 3. LOGIQUE SÉCURITÉ (LOGIN) ---
 function checkPass() {
     const input = document.getElementById('pass-input');
     const errDiv = document.getElementById('error-msg');
     const panel = document.querySelector('.glass-panel');
 
-    if(input.value === CONFIG.motDePasse) {
-        input.style.borderColor = "#4CAF50";
-        errDiv.style.color = "#4CAF50";
+    if (input.value === CONFIG.motDePasse) {
+        errDiv.style.color = "#2ecc71";
         errDiv.innerText = "Accès autorisé... ❤️";
-        playSound(); // Lance la musique à l'ouverture si le navigateur l'autorise
         setTimeout(() => switchScreen('login-screen', 'menu-screen'), 1000);
     } else {
         failedAttempts++;
-        panel.classList.remove('shake'); void panel.offsetWidth; panel.classList.add('shake');
-        input.value = ""; input.focus();
-
-        // Messages d'erreur
-        if(failedAttempts < 5) {
-            const msgs = ["Non...", "Toujours pas", "Essaie encore", "Indice : C'est nous"];
-            errDiv.innerText = msgs[Math.floor(Math.random() * msgs.length)];
+        panel.classList.remove('shake');
+        void panel.offsetWidth;
+        panel.classList.add('shake');
+        input.value = "";
+        
+        if (failedAttempts < 5) {
+            const hints = ["Mauvais code... 🤭", "Réessaie encore ! ✨", "Petit indice : Notre date ?", "C'est presque ça !"];
+            errDiv.innerText = hints[Math.floor(Math.random() * hints.length)];
         } else {
-            // Message SPÉCIAL après 5 erreurs
-            errDiv.innerText = "Tu m'as oublié ? 😭 Je vais pleurer !";
-            errDiv.style.fontSize = "1.1rem";
+            errDiv.innerText = "Sérieusement ? 😭 Tu as oublié ? Je boude !";
         }
     }
 }
 
-// --- CAROUSEL 3D (5 CARTES) ---
-let currDeg = 0;
-const carousel = document.getElementById('carousel');
+// --- 4. CAROUSEL 3D (5 CARTES) ---
 function rotateCarousel(dir) {
-    currDeg -= dir * 72; // 360 / 5 = 72 degrés
+    const carousel = document.getElementById('carousel');
+    currDeg -= dir * 72; // 360 / 5 cartes = 72 degrés
     carousel.style.transform = `rotateY(${currDeg}deg)`;
 }
 
-// --- AUDIO ---
-function toggleMusic() {
-    if(isPlaying) { audioPlayer.pause(); } else { audioPlayer.play(); }
-    isPlaying = !isPlaying;
-}
-function playSound() { 
-    // Tentative de lecture auto (bloqué parfois par Chrome)
-    audioPlayer.volume = 0.5;
-    audioPlayer.play().catch(e => console.log("Audio bloqué en attente d'interaction"));
-    isPlaying = true;
+// --- 5. JUKE-BOX ---
+function selectTrack(index) {
+    if (currentTrackIndex === index) {
+        if (audioPlayer.paused) { audioPlayer.play(); isPlaying = true; }
+        else { audioPlayer.pause(); isPlaying = false; }
+    } else {
+        currentTrackIndex = index;
+        audioPlayer.src = CONFIG.playlist[index].file;
+        audioPlayer.play();
+        isPlaying = true;
+    }
+    openModal(3); // Rafraîchir l'interface
 }
 
-// --- MODAL & FEEDBACK WHATSAPP ---
+// --- 6. MODAL & WHATSAPP ---
 function openModal(index) {
-    const data = CONFIG.cartes[index];
     const body = document.getElementById('modal-body');
+    const overlay = document.getElementById('modal-overlay');
     
-    if(data.isQuiz) {
-        // Génère le formulaire de réponse
-        body.innerHTML = `
-            <h2>${data.title}</h2>
-            <p>${CONFIG.questionPourElle}</p>
-            <textarea id="user-reply" placeholder="Écris ta réponse ici..."></textarea>
-            <button class="btn-3d send-btn" onclick="sendToWhatsApp()">Envoyer la réponse 🚀</button>
-            <p style="font-size:0.8rem; margin-top:10px; color:#888;">(Ça ouvrira WhatsApp)</p>
-        `;
-    } else {
-        // Affiche le contenu normal
-        body.innerHTML = `<h2>${data.title}</h2>${data.body}`;
+    let content = "";
+    switch(parseInt(index)) {
+        case 0: content = `<h2>Notre Histoire 📖</h2>${CONFIG.histoire}`; break;
+        case 1: content = `<h2>Tes Cadeaux 🎁</h2>${CONFIG.cadeaux}`; break;
+        case 2: content = `<h2>Mots Doux 💌</h2>${CONFIG.motsDoux}`; break;
+        case 3: // Juke-box
+            content = `<h2>Juke-box 📻</h2><div class="playlist-container">`;
+            CONFIG.playlist.forEach((t, i) => {
+                const active = (currentTrackIndex === i) ? 'active' : '';
+                const icon = (currentTrackIndex === i && !audioPlayer.paused) ? '⏸️' : '▶️';
+                content += `<div class="music-track ${active}" onclick="selectTrack(${i})">
+                    <span>${t.name}</span><button class="btn-3d" style="padding:10px;">${icon}</button>
+                </div>`;
+            });
+            content += `</div>`;
+            break;
+        case 4: // Feedback
+            content = `<h2>Réponds-moi 📝</h2><p>${CONFIG.questionQuiz}</p>
+                       <textarea id="user-reply" placeholder="Écris ici..."></textarea>
+                       <button class="btn-3d send-btn" onclick="sendToWhatsApp()">Envoyer par WhatsApp 🚀</button>`;
+            break;
     }
-    document.getElementById('modal-overlay').classList.add('open');
+    
+    body.innerHTML = content;
+    overlay.classList.add('open');
 }
 
 function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
 
 function sendToWhatsApp() {
     const reply = document.getElementById('user-reply').value;
-    if(!reply) return alert("Écris un petit mot avant ! 😘");
-    
-    // Création du lien WhatsApp
-    const text = `Coucou ! J'ai vu ta surprise. Voici ma réponse à ta question : ${reply} ❤️`;
-    const url = `https://wa.me/${CONFIG.tonNumeroWhatsApp}?text=${encodeURIComponent(text)}`;
-    
-    window.open(url, '_blank');
+    if (!reply) return alert("Dis-moi au moins un petit mot ! 😘");
+    const text = `Coucou ! Voici ma réponse : ${reply}`;
+    window.open(`https://wa.me/${CONFIG.tonNumeroWhatsApp}?text=${encodeURIComponent(text)}`, '_blank');
 }
 
-// --- DECORATION ---
-function createPetals() {
-    const c = document.getElementById('bg-container');
+// --- INITIALISATION ---
+window.onload = () => {
+    document.getElementById('u-name').innerText = CONFIG.prenom;
+    initParticles();
+    animateParticles();
+
+    // Event listeners
+    document.getElementById('login-btn').onclick = checkPass;
+    document.querySelector('.nav-btn.prev').onclick = () => rotateCarousel(-1);
+    document.querySelector('.nav-btn.next').onclick = () => rotateCarousel(1);
+    document.querySelector('.close-modal').onclick = closeModal;
+    
+    document.querySelectorAll('.menu-card').forEach(card => {
+        card.onclick = () => openModal(card.getAttribute('data-index'));
+    });
+
+    // Pétales de fond
+    const bg = document.getElementById('bg-container');
     for(let i=0; i<15; i++) {
         let p = document.createElement('div');
         p.className = 'petal';
@@ -174,6 +196,11 @@ function createPetals() {
         p.style.width = p.style.height = (Math.random()*10+5)+'px';
         p.style.animationDuration = (Math.random()*5+5)+'s';
         p.style.animationDelay = Math.random()*5+'s';
-        c.appendChild(p);
+        bg.appendChild(p);
     }
-           }
+
+    // Fin de l'intro après 4.5s
+    setTimeout(() => {
+        switchScreen('intro-screen', 'login-screen');
+    }, 4500);
+};
