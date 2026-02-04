@@ -1,161 +1,324 @@
-/* --- RESET & FONTS --- */
-* { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+/* --- CONFIGURATION & POLICES --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
 body {
-    font-family: 'Poppins', sans-serif; 
-    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-    height: 100vh; overflow: hidden;
-    display: flex; justify-content: center; align-items: center;
-    color: #4a4a4a;
+    font-family: 'Poppins', sans-serif;
+    background: #000; /* Fond noir pour l'intro, le dégradé est par-dessus ensuite */
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #333;
 }
 
-/* --- BACKGROUND --- */
+/* --- DÉCORATION DE FOND --- */
 .bg-gradient {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to bottom, #ffdde1, #ee9ca7);
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 50%, #fad0c4 100%);
     z-index: -2;
+    opacity: 0; /* Caché pendant l'intro */
+    transition: opacity 2s ease;
 }
+
 .petal {
-    position: absolute; background-color: rgba(255, 255, 255, 0.6);
-    border-radius: 150% 0 150% 0; z-index: -1;
+    position: absolute;
+    background-color: rgba(255, 255, 255, 0.4);
+    border-radius: 150% 0 150% 0;
+    z-index: -1;
     animation: falling 10s infinite linear;
 }
 
-/* --- LAYOUT --- */
-#app { width: 100%; height: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.screen {
-    position: absolute; width: 100%; height: 100%;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    opacity: 0; pointer-events: none; transition: all 0.6s ease;
+/* --- STRUCTURE DES ÉCRANS --- */
+#app {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.screen.active { opacity: 1; pointer-events: all; transform: scale(1); }
-.screen.hidden { transform: scale(0.9) translateY(-20px); opacity: 0; }
 
-/* --- INTRO --- */
-#intro-screen svg { width: 150px; height: 200px; overflow: visible; }
-.branch { fill: none; stroke: #5d4037; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; animation: drawBranch 2s forwards ease-in-out; }
-.flower { fill: #ff4081; transform: scale(0); transform-box: fill-box; transform-origin: center; animation: bloom 0.5s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-.intro-text { margin-top: 20px; font-weight: 600; color: #5d4037; opacity: 0; animation: fadeIn 1s 2.5s forwards; }
+.screen {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-/* --- BOUTONS 3D (STYLE CARTOON/CHUNKY) --- */
+.active { opacity: 1; transform: scale(1); pointer-events: all; }
+.hidden { opacity: 0; transform: scale(1.1); pointer-events: none; }
+
+/* --- INTRO "OUF" (PARTICULES) --- */
+#particle-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: #000;
+}
+
+.intro-overlay {
+    position: absolute;
+    z-index: 5;
+    text-align: center;
+}
+
+#intro-text {
+    color: white;
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    animation: pulseText 2s infinite;
+}
+
+/* --- BOUTONS 3D --- */
 .btn-3d {
-    border: none; outline: none; cursor: pointer;
-    font-weight: 600; text-transform: uppercase;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-radius: 16px;
     transition: all 0.1s;
-    /* Effet 3D */
     background: #ff4081;
     color: white;
-    box-shadow: 0px 5px 0px #c2185b, 0px 10px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 0 #c2185b, 0 12px 20px rgba(194, 24, 91, 0.3);
+    position: relative;
     transform: translateY(0);
-    border-radius: 15px;
 }
+
 .btn-3d:active {
-    box-shadow: 0px 0px 0px #c2185b, 0px 0px 5px rgba(0,0,0,0.2);
-    transform: translateY(5px); /* Le bouton s'enfonce */
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #c2185b, 0 4px 10px rgba(194, 24, 91, 0.3);
 }
 
-/* --- LOGIN --- */
+/* --- PAGE DE CONNEXION --- */
 .glass-panel {
-    background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-    border: 2px solid rgba(255, 255, 255, 0.6); padding: 40px 30px; border-radius: 30px;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1); text-align: center; width: 85%; max-width: 350px;
+    background: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    padding: 40px 25px;
+    border-radius: 30px;
+    width: 90%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
+
+.glass-panel h2 { font-size: 1.8rem; margin-bottom: 15px; color: #444; }
+
 input {
-    width: 100%; padding: 15px; border-radius: 15px; border: 2px solid white;
-    background: rgba(255,255,255,0.8); text-align: center; font-size: 1.3rem; letter-spacing: 3px;
-    margin-bottom: 25px; outline: none; color: #333; font-weight: bold;
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+    width: 100%;
+    padding: 16px;
+    border-radius: 16px;
+    border: 2px solid white;
+    background: rgba(255, 255, 255, 0.9);
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    outline: none;
+    color: #ff4081;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
-#login-btn { padding: 15px 40px; font-size: 1.1rem; width: 100%; }
-.error-msg { color: #d32f2f; margin-top: 20px; font-weight: bold; min-height: 25px; font-size: 0.9rem; }
-.shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
 
-/* --- MENU 3D (5 CARTES) --- */
-.menu-title { color: white; text-shadow: 0 3px 6px rgba(0,0,0,0.2); margin-bottom: 30px; font-size: 2rem; }
-.menu-container { perspective: 1000px; width: 100%; height: 320px; display: flex; justify-content: center; align-items: center; }
+#login-btn { width: 100%; padding: 18px; font-size: 1rem; }
+
+.error-msg {
+    margin-top: 20px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #d32f2f;
+    min-height: 24px;
+}
+
+/* --- MENU 3D CAROUSEL --- */
+.menu-container {
+    perspective: 1200px;
+    width: 100%;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .card-stack {
-    width: 240px; height: 320px; position: relative;
-    transform-style: preserve-3d; transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    width: 220px;
+    height: 300px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
 .menu-card {
-    position: absolute; width: 100%; height: 100%;
-    background: white; border-radius: 25px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15); border: 4px solid white;
-    /* Dégradé subtil sur les cartes */
-    background: linear-gradient(to bottom right, #fff, #f8f8f8);
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: white;
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: 5px solid white;
+    backface-visibility: hidden;
 }
 
-/* Positionnement 5 Cartes (72 degrés d'écart) */
-/* translateZ = (width / 2) / tan(36deg) ≈ 170px. On met 190px pour aérer. */
-.menu-card:nth-child(1) { transform: rotateY(0deg) translateZ(190px); }
-.menu-card:nth-child(2) { transform: rotateY(72deg) translateZ(190px); }
-.menu-card:nth-child(3) { transform: rotateY(144deg) translateZ(190px); }
-.menu-card:nth-child(4) { transform: rotateY(216deg) translateZ(190px); }
-.menu-card:nth-child(5) { transform: rotateY(288deg) translateZ(190px); }
-
+/* Couleurs des icônes sur les cartes */
 .card-icon { font-size: 3.5rem; margin-bottom: 10px; }
-.card-title { font-size: 1.3rem; font-weight: bold; color: #333; }
-.playing-indicator { font-size: 0.8rem; color: #ff4081; margin-top: 5px; font-weight: bold; }
+.card-title { font-weight: 800; color: #444; font-size: 1.1rem; }
 
-.nav-buttons { margin-top: 50px; display: flex; gap: 30px; }
-.nav-btn {
-    width: 60px; height: 60px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.5rem; background: white; color: #ff4081;
-    box-shadow: 0 5px 0 #ddd, 0 10px 10px rgba(0,0,0,0.1); /* 3D Blanc */
+/* Navigation du Carousel */
+.nav-buttons {
+    margin-top: 40px;
+    display: flex;
+    gap: 25px;
 }
-.nav-btn:active { box-shadow: 0 0 0 #ddd, 0 0 0 rgba(0,0,0,0); transform: translateY(5px); }
+
+.nav-btn {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: white;
+    color: #ff4081;
+    box-shadow: 0 6px 0 #eee, 0 12px 20px rgba(0,0,0,0.1);
+}
+
+.nav-btn:active {
+    box-shadow: 0 2px 0 #eee;
+}
+
+/* --- JUKE-BOX (PLAYLIST DANS MODAL) --- */
+.playlist-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.music-track {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    background: #f9f9f9;
+    border-radius: 18px;
+    border: 2px solid #eee;
+    transition: all 0.3s ease;
+}
+
+.music-track.active {
+    background: #fff0f5;
+    border-color: #ff4081;
+}
+
+.music-track span { font-weight: 600; font-size: 0.9rem; }
 
 /* --- MODAL --- */
 #modal-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 100;
-    display: flex; justify-content: center; align-items: flex-end;
-    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s;
 }
+
 #modal-overlay.open { opacity: 1; pointer-events: all; }
+
 .modal-content {
-    background: #fff; width: 100%; height: 85%;
-    border-radius: 40px 40px 0 0; padding: 30px;
-    transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
-    overflow-y: auto; position: relative;
+    background: white;
+    width: 100%;
+    max-height: 85%;
+    border-radius: 40px 40px 0 0;
+    padding: 35px 25px;
+    transform: translateY(100%);
+    transition: transform 0.5s cubic-bezier(0.1, 0.9, 0.2, 1);
+    position: relative;
+    overflow-y: auto;
 }
+
 #modal-overlay.open .modal-content { transform: translateY(0); }
+
 .close-modal {
-    position: absolute; top: 20px; right: 20px;
-    background: #eee; color: #333; width: 40px; height: 40px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 3px 0 #ccc; /* Petit 3D */
+    position: absolute;
+    top: 20px; right: 20px;
+    width: 45px; height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+    box-shadow: 0 4px 0 #ddd;
+    color: #333;
 }
-#modal-body { margin-top: 40px; }
-#modal-body h2 { color: #ff4081; font-size: 1.8rem; margin-bottom: 20px; }
-#modal-body p { line-height: 1.6; font-size: 1.1rem; color: #555; margin-bottom: 15px; }
 
-/* Styles spécifiques au formulaire de réponse */
+/* --- FORMULAIRE RÉPONSE --- */
 textarea {
-    width: 100%; height: 120px; padding: 15px; border-radius: 15px;
-    border: 2px solid #eee; font-family: inherit; font-size: 1rem;
-    margin-bottom: 20px; resize: none; background: #fafafa;
+    width: 100%;
+    height: 120px;
+    border-radius: 20px;
+    border: 2px solid #eee;
+    background: #fdfdfd;
+    padding: 15px;
+    font-family: inherit;
+    font-size: 1rem;
+    margin: 20px 0;
+    outline: none;
+    resize: none;
 }
-.send-btn {
-    width: 100%; background: #25D366; /* Couleur WhatsApp */
-    box-shadow: 0px 5px 0px #128C7E, 0px 10px 20px rgba(0,0,0,0.2);
-}
-.send-btn:active { box-shadow: 0px 0px 0px #128C7E; }
 
-@keyframes drawBranch { to { stroke-dashoffset: 0; } }
-@keyframes bloom { to { transform: scale(1); } }
-@keyframes fadeIn { to { opacity: 1; } }
-@keyframes shake { 
+.send-btn {
+    width: 100%;
+    background: #25D366; /* Vert WhatsApp */
+    box-shadow: 0 6px 0 #128C7E;
+    padding: 18px;
+}
+
+/* --- ANIMATIONS KEYFRAMES --- */
+@keyframes pulseText {
+    0%, 100% { opacity: 0.4; transform: scale(0.95); }
+    50% { opacity: 1; transform: scale(1.05); }
+}
+
+@keyframes shake {
     10%, 90% { transform: translate3d(-1px, 0, 0); }
     20%, 80% { transform: translate3d(2px, 0, 0); }
     30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
     40%, 60% { transform: translate3d(4px, 0, 0); }
 }
+
 @keyframes falling {
     0% { transform: translate(0, -10vh) rotate(0deg); opacity: 1; }
-    100% { transform: translate(20px, 110vh) rotate(360deg); opacity: 0; }
-              }
-
-      
+    100% { transform: translate(30px, 110vh) rotate(360deg); opacity: 0; }
+    }
+    
